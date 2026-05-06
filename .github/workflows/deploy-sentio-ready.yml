@@ -29,6 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          # Force install latest version to fix "unknown command 'deploy'"
           npm install -g @sentio/cli@latest
           npm install -g wrangler
           npm install
@@ -39,7 +40,6 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           wrangler d1 execute nexus-provenance --file schema/schema.sql --remote
-          echo "✓ D1 schema initialized successfully"
 
       - name: Deploy Sentio Processor
         env:
@@ -48,31 +48,28 @@ jobs:
           MERKLE_ROOT: 5c9f290231ce07d09f135d9b0c602bf5450d493e88ddbc89d5cbec1dad7fdf65
           EVENT_NAME: RecordBroadcast
         run: |
-          # 1. Create the project config file if it's missing
-          if [ ! -f "src/processor/sentio.yaml" ]; then
-            echo "project: 'nexus-noc'" > src/processor/sentio.yaml
-            echo "network: 'solana-devnet'" >> src/processor/sentio.yaml
-            echo "host: 'https://app.sentio.xyz'" >> src/processor/sentio.yaml
-          fi
-
-          # 2. Authenticate the CLI using the API key
-          # This fixes the "No Credential found" error
+          # 1. Login to fix "No Credential found"
           sentio login --api-key $SENTIO_API_KEY
 
-          # 3. Navigate to the processor directory and upload
+          # 2. Deploy from the processor directory
           cd src/processor
+          
+          # Inject variables into processor.ts
+          sed -i "s/YOUR_PROGRAM_ID_HERE/$PROGRAM_ID/g" processor.ts
+          sed -i "s/YOUR_MERKLE_ROOT_HERE/$MERKLE_ROOT/g" processor.ts
+          sed -i "s/YOUR_EVENT_HERE/$EVENT_NAME/g" processor.ts
+          
+          # Upload project
           sentio upload
           echo "✓ Sentio processor deployed successfully"
 
       - name: Verify Deployment Status
         env:
-          SENTIO_API_KEY: ${{ secrets.SENTIO_API_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          echo "📊 Checking sync status..."
           wrangler d1 execute nexus-provenance \
-            --command "SELECT COUNT(*) as total_synced, MAX(date) as latest_date FROM etoro_records WHERE synced_to_sentio=1;" \
+            --command "SELECT COUNT(*) FROM etoro_records WHERE synced_to_sentio=1;" \
             --remote
 
   notify:
@@ -80,11 +77,11 @@ jobs:
     needs: deploy
     if: always()
     steps:
-      - name: Deployment Status Summary
+      - name: Deployment Status
         run: |
           if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "✅ Deployment successful"
+            echo "✅ Sentio processor deployment successful"
             echo "🔐 Owner: tim@charleshendersonandhendfam.online"
           else
-            echo "❌ Deployment failed - check API key validity"
+            echo "❌ Deployment failed - check CLI logs"
           fi
