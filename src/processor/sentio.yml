@@ -1,7 +1,8 @@
 # © 2026 Charles Henderson. All rights reserved.
 # Project: NEXUS NOC
 
-project: nexus-noc
-network: solana-devnet
-processor:
-  - file: processor.ts
+project: 'nexus-noc'
+network: 'solana-devnet'
+host: 'https://app.sentio.xyz'
+build:
+  tsup: true
