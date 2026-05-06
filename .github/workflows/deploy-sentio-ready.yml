@@ -55,9 +55,9 @@ jobs:
           cd src/processor
           
           # Inject variables into processor.ts
-          sed -i "s/YOUR_PROGRAM_ID_HERE/$PROGRAM_ID/g" processor.ts
-          sed -i "s/YOUR_MERKLE_ROOT_HERE/$MERKLE_ROOT/g" processor.ts
-          sed -i "s/YOUR_EVENT_HERE/$EVENT_NAME/g" processor.ts
+          sed -i "s/8gxspbzkF2ooczEc2ASX8LtjeNa5vu6U89axod1jvg2L/$8gxspbzkF2ooczEc2ASX8LtjeNa5vu6U89axod1jvg2L/g" processor.ts
+          sed -i "s/5c9f290231ce07d09f135d9b0c602bf5450d493e88ddbc89d5cbec1dad7fdf65/$5c9f290231ce07d09f135d9b0c602bf5450d493e88ddbc89d5cbec1dad7fdf65/g" processor.ts
+          sed -i "s/RecordBroadcast/$RecordBroadcast/g" processor.ts
           
           # Upload project
           sentio upload
