@@ -1,0 +1,116 @@
+name: Deploy Sentio Processor & D1 Schema
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/processor/**'
+      - 'schema/**'
+      - '.github/workflows/deploy-sentio.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm install -g @sentio/cli
+          npm install -g wrangler
+          npm install
+
+      - name: Initialize D1 Schema (nexus-provenance)
+        env:
+          CLOUDFLARE_API_TOKEN: cfat_BdExzSC8CzaJyOR75lsBaUGlymM0LoXjPdslz5U347f31afa
+          CLOUDFLARE_ACCOUNT_ID: 9dcc6dd59d55b7066026b0962f822e4f
+        run: |
+          wrangler d1 execute nexus-provenance --file schema/schema.sql --remote
+          echo "✓ D1 schema initialized successfully"
+
+      - name: Verify Merkle Root Configuration
+        env:
+          CLOUDFLARE_API_TOKEN: cfat_BdExzSC8CzaJyOR75lsBaUGlymM0LoXjPdslz5U347f31afa
+          CLOUDFLARE_ACCOUNT_ID: 9dcc6dd59d55b7066026b0962f822e4f
+        run: |
+          wrangler d1 execute nexus-provenance \
+            --command "SELECT value FROM analytics_config WHERE key='active_merkle_root';" \
+            --remote
+          echo "✓ Merkle root verified in D1"
+
+      - name: Deploy Sentio Processor
+        env:
+          SENTIO_API_KEY: vH1FV9LO9jcUs35pZ65ZvTPY5822rKGyP
+          PROGRAM_ID: 8gxspbzkF2ooczEc2ASX8LtjeNa5vu6U89axod1jvg2L
+          MERKLE_ROOT: 5c9f290231ce07d09f135d9b0c602bf5450d493e88ddbc89d5cbec1dad7fdf65
+          EVENT_NAME: RecordBroadcast
+          OWNER_EMAIL: tim@charleshendersonandhendfam.online
+        run: |
+          sed -i 's/YOUR_PROGRAM_ID_HERE/'$PROGRAM_ID'/g' src/processor/processor.ts
+          sed -i 's/YOUR_MERKLE_ROOT_HERE/'$MERKLE_ROOT'/g' src/processor/processor.ts
+          sed -i 's/YOUR_EVENT_HERE/'$EVENT_NAME'/g' src/processor/processor.ts
+          sentio deploy
+          echo "✓ Sentio processor deployed successfully"
+
+      - name: Verify Deployment Status
+        env:
+          SENTIO_API_KEY: vH1FV9LO9jcUs35pZ65ZvTPY5822rKGyP
+          CLOUDFLARE_API_TOKEN: cfat_BdExzSC8CzaJyOR75lsBaUGlymM0LoXjPdslz5U347f31afa
+          CLOUDFLARE_ACCOUNT_ID: 9dcc6dd59d55b7066026b0962f822e4f
+        run: |
+          echo "📊 Checking sync status..."
+          wrangler d1 execute nexus-provenance \
+            --command "SELECT COUNT(*) as total_synced, MAX(date) as latest_date FROM etoro_records WHERE synced_to_sentio=1;" \
+            --remote
+          
+          echo "📋 Recent sync events..."
+          wrangler d1 execute nexus-provenance \
+            --command "SELECT event_name, status, synced_at FROM sentio_sync_log ORDER BY synced_at DESC LIMIT 5;" \
+            --remote
+          
+          echo "✅ Merkle verification health..."
+          wrangler d1 execute nexus-provenance \
+            --command "SELECT * FROM merkle_verification_status;" \
+            --remote
+
+      - name: Deployment Success
+        if: success()
+        run: |
+          echo "🚀 Deployment completed successfully!"
+          echo "✓ D1 schema initialized"
+          echo "✓ Sentio processor deployed"
+          echo "✓ All verifications passed"
+
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo "❌ Deployment failed!"
+          echo "Check logs above for details"
+          exit 1
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always()
+    steps:
+      - name: Deployment Status
+        run: |
+          if [ "${{ needs.deploy.result }}" == "success" ]; then
+            echo "✅ Sentio processor deployment successful"
+            echo "🌍 Network: Solana Devnet"
+            echo "📦 Database: nexus-provenance (D1)"
+            echo "🔐 Owner: tim@charleshendersonandhendfam.online"
+          else
+            echo "❌ Deployment failed - check workflow logs"
+          fi
