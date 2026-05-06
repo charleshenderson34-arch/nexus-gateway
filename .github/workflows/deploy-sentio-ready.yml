@@ -30,7 +30,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm install -g @sentio/cli
+          # Force install the latest Sentio CLI to fix the 'unknown command' error
+          npm install -g @sentio/cli@latest 
           npm install -g wrangler
           npm install
 
@@ -63,8 +64,10 @@ jobs:
           sed -i 's/YOUR_PROGRAM_ID_HERE/'$PROGRAM_ID'/g' src/processor/processor.ts
           sed -i 's/YOUR_MERKLE_ROOT_HERE/'$MERKLE_ROOT'/g' src/processor/processor.ts
           sed -i 's/YOUR_EVENT_HERE/'$EVENT_NAME'/g' src/processor/processor.ts
-          sentio deploy
-          echo "✓ Sentio processor deployed to Solana Devnet"
+          
+          # Using 'upload' which is the standard command for newer Sentio CLI versions
+          sentio upload
+          echo "✓ Sentio processor deployed successfully"
 
       - name: Verify Deployment Status
         env:
@@ -77,24 +80,17 @@ jobs:
             --command "SELECT COUNT(*) as total_synced, MAX(date) as latest_date FROM etoro_records WHERE synced_to_sentio=1;" \
             --remote
 
-      - name: Deployment Failure Cleanup
-        if: failure()
-        run: |
-          echo "❌ Deployment failed! Check logs for Sentio or Cloudflare D1 errors."
-          exit 1
-
   notify:
     runs-on: ubuntu-latest
     needs: deploy
     if: always()
     steps:
-      - name: Print Status Summary
+      - name: Deployment Status Summary
         run: |
           if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "✅ Sentio processor deployment successful"
+            echo "✅ Deployment successful"
             echo "🌍 Network: Solana Devnet"
-            echo "📦 Database: nexus-provenance (D1)"
+            echo "📦 Database: nexus-provenance"
           else
-            echo "❌ Deployment failed"
+            echo "❌ Deployment failed - check CLI version and secrets"
           fi
-
