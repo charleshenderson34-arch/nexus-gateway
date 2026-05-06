@@ -1,0 +1,7 @@
+# © 2026 Charles Henderson. All rights reserved.
+# Project: NEXUS NOC
+
+project: nexus-noc
+network: solana-devnet
+processor:
+  - file: processor.ts
