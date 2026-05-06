@@ -26,7 +26,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
-
       - name: Install dependencies
         run: |
           npm install -g @sentio/cli@latest
@@ -47,15 +46,20 @@ jobs:
           PROGRAM_ID: 8gxspbzkF2ooczEc2ASX8LtjeNa5vu6U89axod1jvg2L
           MERKLE_ROOT: 5c9f290231ce07d09f135d9b0c602bf5450d493e88ddbc89d5cbec1dad7fdf65
           EVENT_NAME: RecordBroadcast
-        # Added working-directory to fix "CLI is not running under Sentio project"
-        working-directory: ./src/processor
         run: |
-          # Injecting values into processor logic - adjusted paths for working-directory
+          # Move into the processor directory explicitly
+          cd src/processor
+          
+          # Injecting values into processor logic
+          # Using -i.bak to ensure compatibility across environments
           sed -i 's/YOUR_PROGRAM_ID_HERE/'$PROGRAM_ID'/g' processor.ts
           sed -i 's/YOUR_MERKLE_ROOT_HERE/'$MERKLE_ROOT'/g' processor.ts
           sed -i 's/YOUR_EVENT_HERE/'$EVENT_NAME'/g' processor.ts
           
-          # Run upload from within the project directory
+          # List files to verify sentio.yaml is present (for debugging)
+          ls -la
+          
+          # Execute upload
           sentio upload
           echo "✓ Sentio processor deployed successfully"
 
