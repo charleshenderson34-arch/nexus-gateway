@@ -1,7 +1,7 @@
 {
 	"compatibility_date": "2025-10-08",
 	"main": "src/index.ts",
-	"name": "nexus-gateway",
+	"name": "nexus-noc",
 	"upload_source_maps": true,
 	"d1_databases": [
 		{
