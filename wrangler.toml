@@ -1,6 +1,8 @@
-name = "nexus-noc-routing"
-main = "worker.js"
+name = "nexus-gateway"
+main = "src/index.ts"
 compatibility_date = "2026-06-08"
 
-[build]
-command = ""
+[[d1_databases]]
+binding = "DB"
+database_name = "nexus-db"
+database_id = "d6638cc0-1ad1-4adb-a37c-0ba58650211a"
