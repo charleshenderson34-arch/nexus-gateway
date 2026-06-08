@@ -4,5 +4,6 @@ compatibility_date = "2026-06-08"
 
 [[d1_databases]]
 binding = "DB"
-database_name = "nexus-provenance”
-database_id = "3ab9be54-abb6-4b15-99b6-a32fc7b4c388"
+database_name = "nexus-db"
+database_id = "3ab9be54-abb6-4b15-99b6-a32fc7b4c
+388"
