@@ -1,10 +1,9 @@
 {
-  "name": "mcp",
-  "version": "4.9.9",
-  "description": "model context protocol",
-  "main": ".mcp_server",
-  "repository": "none",
-  "author": "Tim Henderson <tim@charleshendersonandhendfam.online>",
-  "license": "MIT",
-  "private": true
+  "dependencies": {
+    "bitcoinjs-lib": "^7.0.1",
+    "ecpair": "^3.0.1",
+    "forge": "^2.3.0",
+    "tiny-secp256k1": "^2.2.4",
+    "typescript": "^6.0.3"
+  }
 }

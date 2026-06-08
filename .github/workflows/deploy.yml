@@ -1,3 +1,7 @@
+    - name: Compile Contracts
+      run: |
+        cd halo2-transfers
+        forge build
 name: Deploy NEXUS Vault
 on:
   push:

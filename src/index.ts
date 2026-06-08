@@ -1,5 +1,1 @@
-export default {
-  async fetch(request, env) {
-    return new Response("NEXUS Mainnet Vault Active");
-  },
-};
+[paste the full nexus-sync-api-fixed.ts content here]
