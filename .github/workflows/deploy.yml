@@ -1,0 +1,14 @@
+name: Deploy NexusTokenRegistry
+on:
+  push:
+    branches: [main]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - run: forge install foundry-rs/forge-std --no-commit
+      - run: forge script script/Deploy.s.sol --rpc-url https://mainnet.base.org --broadcast
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
