@@ -1,0 +1,23 @@
+# Copyright (c) 2026 Charles Timothy Henderson. All rights reserved.
+name: Deploy NexusTokenRegistry
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Execute Deployment
+        run: forge script script/Deploy.s.sol --rpc-url https://mainnet.base.org --broadcast
+        env:
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
