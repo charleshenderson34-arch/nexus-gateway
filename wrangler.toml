@@ -1,8 +1,6 @@
-name = "nexus-mainnet-vault"
-main = "src/index.ts"
-compatibility_date = "2024-05-12"
+name = "nexus-noc-routing"
+main = "worker.js"
+compatibility_date = "2026-06-08"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "nexus-mainnet-vault"
-database_id = "f5bdd939-b831-4b54-9021-62f3885a9b5e"
+[build]
+command = ""
