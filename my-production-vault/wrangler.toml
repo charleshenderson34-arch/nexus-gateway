@@ -1,0 +1,6 @@
+name = "nexus-noc-routing"
+main = "worker.js"
+compatibility_date = "2026-06-08"
+
+[build]
+command = ""
