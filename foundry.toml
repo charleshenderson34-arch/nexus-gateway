@@ -3,4 +3,8 @@ src = 'src'
 script = 'script'
 out = 'out'
 libs = ['lib']
-remappings = ['forge-std=lib/forge-std/src/', 'src=src/']
+remappings = [
+    "@openzeppelin/=lib/openzeppelin-contracts/",
+    "forge-std/=lib/forge-std/src/",
+    "src/=src/"
+]
