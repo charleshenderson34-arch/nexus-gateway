@@ -2,7 +2,9 @@
   "dependencies": {
     "bitcoinjs-lib": "^7.0.1",
     "ecpair": "^3.0.1",
+    "ethers": "^6.12.1",
     "forge": "^2.3.0",
+    "qrcode": "^1.5.4",
     "tiny-secp256k1": "^2.2.4",
     "typescript": "^6.0.3"
   }
