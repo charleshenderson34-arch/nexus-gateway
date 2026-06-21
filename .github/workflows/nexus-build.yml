@@ -1,0 +1,19 @@
+name: Nexus Cloud Build
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: recursive
+
+    - name: Configure CMake
+      run: cmake -B build -DBUILD_TESTS=OFF
+
+    - name: Compile Core
+      run: cmake --build build -j4
