@@ -9,23 +9,41 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
-        submodules: false
+        submodules: recursive
 
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y cmake clang libboost-all-dev libgtest-dev protobuf-compiler libprotobuf-dev
+        sudo apt-get install -y cmake clang libboost-all-dev protobuf-compiler libprotobuf-dev ruby
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Install cbindgen
+      run: cargo install --locked cbindgen
+
+    - name: Install wallet-core build dependencies
+      run: |
+        cd external/wallet-core
+        ./tools/install-dependencies
+
+    - name: Generate protobuf and coin files
+      env:
+        RUSTC_BOOTSTRAP: 1
+      run: |
+        cd external/wallet-core
+        ./tools/generate-files native
 
     - name: Configure SDK
-      run: >
-        cmake -B build 
-        -DBUILD_TESTS=OFF 
-        -DCMAKE_C_COMPILER=clang 
-        -DCMAKE_CXX_COMPILER=clang++ 
+      run: |
+        cmake -Hexternal/wallet-core -Bbuild \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DTW_UNIT_TESTS=OFF \
+        -DCMAKE_C_COMPILER=clang \
+        -DCMAKE_CXX_COMPILER=clang++ \
         -DProtobuf_USE_STATIC_LIBS=OFF
-        -DTW_SDK_BUILD=ON
 
     - name: Compile SDK
       run: cmake --build build -j4

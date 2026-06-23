@@ -1,0 +1,16 @@
+name: 'Build Wallet Core'
+description: 'Builds Trust Wallet Core with required dependencies'
+runs:
+  using: "composite"
+  steps:
+    - name: Install System Dependencies
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y clang libboost-all-dev libprotobuf-dev protobuf-compiler
+    - name: Build Wallet Core
+      shell: bash
+      run: |
+        cd external/wallet-core
+        ./tools/generate-files native
+        mkdir -p build && cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+        make -j4
